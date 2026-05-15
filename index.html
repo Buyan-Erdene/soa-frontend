@@ -21,9 +21,9 @@
       width: 90%;
       max-width: 400px;
     }
-    h2 { 
-      text-align: center; 
-      color: #333; 
+    h2 {
+      text-align: center;
+      color: #333;
       margin-bottom: 30px;
       font-size: 28px;
     }
@@ -48,12 +48,8 @@
       border-bottom: 3px solid #667eea;
       margin-bottom: -2px;
     }
-    .form-section {
-      display: none;
-    }
-    .form-section.active {
-      display: block;
-    }
+    .form-section { display: none; }
+    .form-section.active { display: block; }
     label {
       display: block;
       margin-bottom: 6px;
@@ -70,10 +66,7 @@
       font-size: 14px;
       transition: border 0.3s;
     }
-    input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
+    input:focus { outline: none; border-color: #667eea; }
     button {
       width: 100%;
       padding: 14px;
@@ -88,11 +81,9 @@
     }
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 12px rgba(102,126,234,0.4);
     }
-    button:active {
-      transform: translateY(0);
-    }
+    button:active { transform: translateY(0); }
     #msg {
       margin-top: 16px;
       padding: 12px;
@@ -102,41 +93,36 @@
       text-align: center;
     }
     .success { background: #e8f5e9; color: #2e7d32; }
-    .error { background: #ffebee; color: #c62828; }
-    .info { background: #e3f2fd; color: #1565c0; }
+    .error   { background: #ffebee; color: #c62828; }
+    .info    { background: #e3f2fd; color: #1565c0; }
   </style>
 </head>
 <body>
 <div class="container">
-  <h2>🔐 Нэвтрэх систем</h2>
+  <h2>🔐 Нэвтрэх хэсэг</h2>
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('login')">Нэвтрэх</button>
-    <button class="tab" onclick="switchTab('register')">Бүртгүүлэх</button>
+    <button class="tab"        onclick="switchTab('register')">Бүртгүүлэх</button>
   </div>
 
-  <!-- LOGIN FORM -->
+  <!-- LOGIN -->
   <div id="login-form" class="form-section active">
     <label>Нэвтрэх нэр</label>
     <input id="login-user" placeholder="testuser">
-    
     <label>Нууц үг</label>
     <input id="login-pass" type="password" placeholder="••••••">
-    
     <button onclick="login()">Нэвтрэх</button>
   </div>
 
-  <!-- REGISTER FORM -->
+  <!-- REGISTER -->
   <div id="register-form" class="form-section">
     <label>Нэвтрэх нэр</label>
     <input id="reg-user" placeholder="Шинэ хэрэглэгч">
-    
     <label>И-мэйл</label>
     <input id="reg-email" type="email" placeholder="name@example.com">
-    
     <label>Нууц үг</label>
     <input id="reg-pass" type="password" placeholder="••••••">
-    
     <button onclick="register()">Бүртгүүлэх</button>
   </div>
 
@@ -144,15 +130,13 @@
 </div>
 
 <script>
-  
-  const GATEWAY_URL = 'http://159.223.90.44'; 
-  const SOAP_URL    = GATEWAY_URL + '/api/soap/';
+  const GATEWAY = 'http://134.209.104.131';
+  const SOAP_URL = GATEWAY + '/api/soap/';
 
-  
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
-    
+
     if (tab === 'login') {
       document.querySelector('.tab:nth-child(1)').classList.add('active');
       document.getElementById('login-form').classList.add('active');
@@ -163,7 +147,6 @@
     hideMsg();
   }
 
-  
   function showMsg(text, type) {
     const el = document.getElementById('msg');
     el.textContent   = text;
@@ -175,7 +158,6 @@
     document.getElementById('msg').style.display = 'none';
   }
 
-  
   function buildSOAP(action, body) {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -188,7 +170,6 @@
 </soapenv:Envelope>`;
   }
 
-  
   async function register() {
     const username = document.getElementById('reg-user').value.trim();
     const email    = document.getElementById('reg-email').value.trim();
@@ -199,45 +180,37 @@
       return;
     }
 
-    const soapBody = `
+    const xml = buildSOAP('RegisterUserRequest', `
       <usr:username>${username}</usr:username>
       <usr:password>${password}</usr:password>
-      <usr:email>${email}</usr:email>`;
-
-    const soapXML = buildSOAP('RegisterUserRequest', soapBody);
+      <usr:email>${email}</usr:email>`);
 
     try {
       showMsg('Бүртгэж байна...', 'info');
 
-      const response = await fetch(SOAP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/xml' },
-        body: soapXML
+      const res  = await fetch(SOAP_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'text/xml;charset=UTF-8' },
+        body:    xml
       });
+      const text = await res.text();
 
-      const text = await response.text();
-
-      // XML-ээс <success> болон <message> задлах
-      const successMatch = text.match(/<success>(.*?)<\/success>/);
-      const messageMatch = text.match(/<message>(.*?)<\/message>/);
-
-      const success = successMatch && successMatch[1] === 'true';
-      const message = messageMatch ? messageMatch[1] : 'Хариу ирсэнгүй';
+      const success = /<success>true<\/success>/.test(text);
+      const msgMatch = text.match(/<message>(.*?)<\/message>/);
+      const message  = msgMatch ? msgMatch[1] : 'Хариу ирсэнгүй';
 
       if (success) {
-        showMsg('✅ ' + message, 'success');
+        showMsg(message, 'success');
         setTimeout(() => switchTab('login'), 1500);
       } else {
-        showMsg('❌ ' + message, 'error');
+        showMsg(message, 'error');
       }
-
     } catch (err) {
-      showMsg('❌ Холболтын алдаа: ' + err.message, 'error');
-      console.error(err);
+      showMsg('Холболтын алдаа: ' + err.message, 'error');
     }
   }
 
-  
+  // ─── Login ──────────────────────────────────
   async function login() {
     const username = document.getElementById('login-user').value.trim();
     const password = document.getElementById('login-pass').value;
@@ -247,47 +220,36 @@
       return;
     }
 
-    const soapBody = `
+    const xml = buildSOAP('LoginUserRequest', `
       <usr:username>${username}</usr:username>
-      <usr:password>${password}</usr:password>`;
-
-    const soapXML = buildSOAP('LoginUserRequest', soapBody);
+      <usr:password>${password}</usr:password>`);
 
     try {
       showMsg('Нэвтэрч байна...', 'info');
 
-      const response = await fetch(SOAP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/xml' },
-        body: soapXML
+      const res  = await fetch(SOAP_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'text/xml;charset=UTF-8' },
+        body:    xml
       });
+      const text = await res.text();
 
-      const text = await response.text();
-
-      const successMatch = text.match(/<success>(.*?)<\/success>/);
-      const tokenMatch   = text.match(/<token>(.*?)<\/token>/);
-      const messageMatch = text.match(/<message>(.*?)<\/message>/);
-
-      const success = successMatch && successMatch[1] === 'true';
+      const success = /<success>true<\/success>/.test(text);
+      const tokenMatch = text.match(/<token>(.*?)<\/token>/);
+      const msgMatch   = text.match(/<message>(.*?)<\/message>/);
       const token   = tokenMatch ? tokenMatch[1] : '';
-      const message = messageMatch ? messageMatch[1] : 'Хариу ирсэнгүй';
+      const message = msgMatch   ? msgMatch[1]   : 'Хариу ирсэнгүй';
 
       if (success && token) {
-        // LocalStorage-д хадгална
-        localStorage.setItem('token', token);
+        localStorage.setItem('token',    token);
         localStorage.setItem('username', username);
-
-        showMsg('✅ ' + message, 'success');
-        setTimeout(() => {
-          window.location.href = 'profile.html';
-        }, 800);
+        showMsg(message, 'success');
+        setTimeout(() => window.location.href = 'profile.html', 800);
       } else {
-        showMsg('❌ ' + message, 'error');
+        showMsg(message, 'error');
       }
-
     } catch (err) {
-      showMsg('❌ Холболтын алдаа: ' + err.message, 'error');
-      console.error(err);
+      showMsg('Холболтын алдаа: ' + err.message, 'error');
     }
   }
 </script>

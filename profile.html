@@ -67,6 +67,7 @@
       font-weight: 600;
       border: none;
       transition: all 0.3s;
+      display: inline-block;
     }
     .upload-btn:hover {
       background: #5648c8;
@@ -89,16 +90,13 @@
       font-size: 14px;
       font-family: inherit;
     }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #667eea;
-    }
+    input:focus, textarea:focus { outline: none; border-color: #667eea; }
     .btn-row {
       display: flex;
       gap: 12px;
       margin-top: 24px;
     }
-    button {
+    .btn-row button {
       flex: 1;
       padding: 14px;
       border: none;
@@ -114,15 +112,10 @@
     }
     .save:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 12px rgba(102,126,234,0.4);
     }
-    .logout {
-      background: #f44336;
-      color: white;
-    }
-    .logout:hover {
-      background: #d32f2f;
-    }
+    .logout { background: #f44336; color: white; }
+    .logout:hover { background: #d32f2f; }
     #msg {
       margin-top: 16px;
       padding: 12px;
@@ -132,8 +125,8 @@
       text-align: center;
     }
     .success { background: #e8f5e9; color: #2e7d32; }
-    .error { background: #ffebee; color: #c62828; }
-    .info { background: #e3f2fd; color: #1565c0; }
+    .error   { background: #ffebee; color: #c62828; }
+    .info    { background: #e3f2fd; color: #1565c0; }
   </style>
 </head>
 <body>
@@ -151,15 +144,16 @@
     <div class="upload-controls">
       <input type="file" id="fileInput" accept="image/*">
       <label for="fileInput" class="upload-btn">📷 Зураг сонгох</label>
-      <button class="upload-btn" onclick="uploadImage()" id="uploadBtn" style="display:none;">
-        💾 Хадгалах
+      <button class="upload-btn" onclick="uploadImage()"
+              id="uploadBtn" style="display:none;">
+        Хадгалах
       </button>
     </div>
   </div>
 
-  <!-- Profile Form -->
+  <!-- Form -->
   <label>Нэр</label>
-  <input id="p-name" placeholder="Таны нэр">
+  <input id="p-name"  placeholder="Таны нэр">
 
   <label>И-мэйл</label>
   <input id="p-email" type="email" placeholder="email@example.com">
@@ -171,7 +165,7 @@
   <textarea id="p-bio" rows="3" placeholder="Өөрийнхөө тухай..."></textarea>
 
   <div class="btn-row">
-    <button class="save" onclick="saveProfile()">💾 Мэдээлэл хадгалах</button>
+    <button class="save"   onclick="saveProfile()">💾 Мэдээлэл хадгалах</button>
     <button class="logout" onclick="logout()">🚪 Гарах</button>
   </div>
 
@@ -179,36 +173,30 @@
 </div>
 
 <script>
-  
-  const GATEWAY_URL = 'http://159.223.90.44';  
-  const JSON_URL    = GATEWAY_URL + '/api/users';
-  const FILE_URL    = GATEWAY_URL + '/api/files';
+  const GATEWAY  = 'http://134.209.104.131';
+  const JSON_URL = GATEWAY + '/api/users';
+  const FILE_URL = GATEWAY + '/api/files';
 
   const token    = localStorage.getItem('token');
   const username = localStorage.getItem('username');
 
-  if (!token) {
-    window.location.href = 'index.html';
-  }
+  if (!token) window.location.href = 'index.html';
 
   document.getElementById('uname-badge').textContent = username || '';
 
-  let profileId = null;
+  let profileId    = null;
   let selectedFile = null;
 
-  
-  document.getElementById('fileInput').addEventListener('change', function(e) {
+  document.getElementById('fileInput').addEventListener('change', function (e) {
     selectedFile = e.target.files[0];
-    if (selectedFile) {
-     
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById('profileImage').src = e.target.result;
-      };
-      reader.readAsDataURL(selectedFile);
-      
-      document.getElementById('uploadBtn').style.display = 'inline-block';
-    }
+    if (!selectedFile) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('profileImage').src = e.target.result;
+    };
+    reader.readAsDataURL(selectedFile);
+    document.getElementById('uploadBtn').style.display = 'inline-block';
   });
 
   function showMsg(text, type) {
@@ -219,20 +207,16 @@
     setTimeout(() => el.style.display = 'none', 4000);
   }
 
-  
   async function loadProfile() {
     try {
       const res = await fetch(JSON_URL, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
 
-      if (res.status === 401) {
-        logout();
-        return;
-      }
+      if (res.status === 401) { logout(); return; }
 
       const list = await res.json();
-      const me = list.find(u => u.username === username);
+      const me   = list.find(u => u.username === username);
 
       if (me) {
         profileId = me.id;
@@ -240,20 +224,19 @@
         document.getElementById('p-email').value = me.email || '';
         document.getElementById('p-phone').value = me.phone || '';
         document.getElementById('p-bio').value   = me.bio   || '';
-        
+
         if (me.profileImageUrl) {
           document.getElementById('profileImage').src = me.profileImageUrl;
         }
       }
-    } catch(e) {
-      showMsg('❌ Профайл ачаалахад алдаа: ' + e.message, 'error');
+    } catch (e) {
+      showMsg('Профайл ачаалахад алдаа: ' + e.message, 'error');
     }
   }
 
-  
   async function uploadImage() {
     if (!selectedFile) {
-      showMsg('❌ Зураг сонгоно уу', 'error');
+      showMsg('Зураг сонгоно уу', 'error');
       return;
     }
 
@@ -261,48 +244,50 @@
     formData.append('file', selectedFile);
 
     try {
-      showMsg('📤 Зураг байршуулж байна...', 'info');
+      showMsg('Зураг байршуулж байна...', 'info');
 
-      const uploadResponse = await fetch(FILE_URL + '/upload', {
-        method: 'POST',
+      const uploadRes = await fetch(FILE_URL + '/upload', {
+        method:  'POST',
         headers: { 'Authorization': 'Bearer ' + token },
         body: formData
       });
 
-      if (!uploadResponse.ok) {
-        const error = await uploadResponse.json();
-        throw new Error(error.error || 'Upload failed');
+      if (!uploadRes.ok) {
+        const err = await uploadRes.text();
+        throw new Error('Upload failed: ' + err);
       }
 
-      const uploadResult = await uploadResponse.json();
-      const imageUrl = uploadResult.url;
+      const uploadData = await uploadRes.json();
+      const imageUrl   = uploadData.url;
 
-      const updateResponse = await fetch(JSON_URL + '/update-profile-image', {
-        method: 'PUT',
+      if (!imageUrl) throw new Error('URL хариуд байхгүй');
+
+      const updateRes = await fetch(JSON_URL + '/update-profile-image', {
+        method:  'PUT',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type':  'application/json',
           'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profileImageUrl: imageUrl,
-          username: username
+          username:        username
         })
       });
 
-      if (updateResponse.ok) {
-        showMsg('✅ Зураг амжилттай солигдлоо!', 'success');
-        document.getElementById('profileImage').src = imageUrl;
-        document.getElementById('uploadBtn').style.display = 'none';
-        selectedFile = null;
-      } else {
-        throw new Error('Failed to update profile');
+      if (!updateRes.ok) {
+        throw new Error('Profile update failed');
       }
 
-    } catch (error) {
-      showMsg('❌ Алдаа: ' + error.message, 'error');
+      document.getElementById('profileImage').src = imageUrl;
+      document.getElementById('uploadBtn').style.display = 'none';
+      selectedFile = null;
+      showMsg('Зураг амжилттай солигдлоо!', 'success');
+
+    } catch (err) {
+      showMsg('Алдаа: ' + err.message, 'error');
     }
   }
-  
+
   async function saveProfile() {
     const body = {
       username,
@@ -314,39 +299,39 @@
 
     try {
       let res;
+
       if (profileId) {
         res = await fetch(`${JSON_URL}/${profileId}`, {
-          method: 'PUT',
+          method:  'PUT',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type':  'application/json',
             'Authorization': 'Bearer ' + token
           },
           body: JSON.stringify(body)
         });
       } else {
-       
         res = await fetch(JSON_URL, {
-          method: 'POST',
+          method:  'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type':  'application/json',
             'Authorization': 'Bearer ' + token
           },
           body: JSON.stringify(body)
         });
-        
+
         if (res.ok) {
           const data = await res.json();
-          profileId = data.id;
+          profileId  = data.id;
         }
       }
 
       showMsg(
-        res.ok ? '✅ Мэдээлэл амжилттай хадгалагдлаа!' : '❌ Алдаа гарлаа',
+        res.ok ? 'Мэдээлэл амжилттай хадгалагдлаа!' : 'Алдаа гарлаа',
         res.ok ? 'success' : 'error'
       );
 
-    } catch(e) {
-      showMsg('❌ Холболтын алдаа: ' + e.message, 'error');
+    } catch (e) {
+      showMsg('Холболтын алдаа: ' + e.message, 'error');
     }
   }
 
