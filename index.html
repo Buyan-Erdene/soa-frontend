@@ -133,6 +133,12 @@
   const GATEWAY = 'https://buyadaa.duckdns.org';
   const SOAP_URL = GATEWAY + '/api/soap/';
 
+  // namespace-тэй XML tag-г уншдаг helper
+  function xmlVal(text, tag) {
+    const m = text.match(new RegExp('<(?:[a-z0-9]+:)?' + tag + '>(.*?)</(?:[a-z0-9]+:)?' + tag + '>', 'i'));
+    return m ? m[1] : null;
+  }
+
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
@@ -195,9 +201,9 @@
       });
       const text = await res.text();
 
-      const success = /<success>true<\/success>/.test(text);
-      const msgMatch = text.match(/<message>(.*?)<\/message>/);
-      const message  = msgMatch ? msgMatch[1] : 'Хариу ирсэнгүй';
+      const successVal = xmlVal(text, 'success');
+      const success    = successVal === 'true';
+      const message    = xmlVal(text, 'message') || 'Хариу ирсэнгүй';
 
       if (success) {
         showMsg(message, 'success');
@@ -210,7 +216,6 @@
     }
   }
 
-  // ─── Login ──────────────────────────────────
   async function login() {
     const username = document.getElementById('login-user').value.trim();
     const password = document.getElementById('login-pass').value;
@@ -234,11 +239,10 @@
       });
       const text = await res.text();
 
-      const success = /<success>true<\/success>/.test(text);
-      const tokenMatch = text.match(/<token>(.*?)<\/token>/);
-      const msgMatch   = text.match(/<message>(.*?)<\/message>/);
-      const token   = tokenMatch ? tokenMatch[1] : '';
-      const message = msgMatch   ? msgMatch[1]   : 'Хариу ирсэнгүй';
+      const successVal = xmlVal(text, 'success');
+      const success    = successVal === 'true';
+      const token      = xmlVal(text, 'token') || '';
+      const message    = xmlVal(text, 'message') || 'Хариу ирсэнгүй';
 
       if (success && token) {
         localStorage.setItem('token',    token);
